@@ -15,7 +15,6 @@ var OUTPUT = './data/';
 
 var dirs = [ 
   'sres',
-  /*
   'sjres',
   'sconres',
   's',
@@ -23,7 +22,6 @@ var dirs = [
   'hr',
   'hjres',
   'hconres'
- */
 ];
 
 async.waterfall([
@@ -49,7 +47,7 @@ async.waterfall([
     d(null, toProcess);
   },
   function(process, d) {
-    async.eachSeries(process, function(session, c) {
+    async.each(process, function(session, c) {
       async.eachSeries(dirs, function(dir, b) {
         var url = BASE + '/' + session + '/' + dir + '/BILLSTATUS-' + session + '-' + dir + '.zip';
         var tmp = '/tmp/' + session + '.zip';
@@ -69,21 +67,8 @@ async.waterfall([
           function(a) {
             var zip = new AdmZip(tmp);
             zip.extractAllTo(out, true);
+            console.log('Decompressed ' + url);
             a();
-            /*
-            new Decompress({mode: '755'})
-              .src(tmp)
-              .dest(out)
-              .use(Decompress.zip({strip:1}))
-              .run(function(err, files) {
-                if (err) {
-                  console.log('Error', err, url);
-                } else {
-                  console.log('Decompressed ' + files.length + ' from', url);
-                }
-                a(err);
-              })
-            */
           },
           function(a) {
             del([tmp], {force:true}, function(err) {
