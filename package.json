@@ -17,12 +17,14 @@
   },
   "homepage": "https://github.com/fpayer/govbigdata#readme",
   "dependencies": {
+    "adm-zip": "^0.4.7",
     "async": "^1.5.2",
     "cheerio": "^0.20.0",
+    "decompress": "^3.0.0",
+    "delete": "^0.3.1",
     "express": "^4.13.4",
     "mkdirp": "^0.5.1",
     "request": "^2.72.0",
-    "unzip2": "^0.2.5",
     "xml2js": "^0.4.16"
   }
 }

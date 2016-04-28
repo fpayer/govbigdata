@@ -5,12 +5,17 @@ var cheerio = require('cheerio');
 var async = require('async');
 var unzip = require('unzip2');
 var mkdirp = require('mkdirp');
+var Decompress = require('decompress');
+var fs = require('fs');
+var del = require('delete');
+var AdmZip = require('adm-zip');
 
 var BASE = 'https://www.gpo.gov/fdsys/bulkdata/BILLSTATUS';
 var OUTPUT = './data/';
 
 var dirs = [ 
   'sres',
+  /*
   'sjres',
   'sconres',
   's',
@@ -18,6 +23,7 @@ var dirs = [
   'hr',
   'hjres',
   'hconres'
+ */
 ];
 
 async.waterfall([
@@ -46,6 +52,7 @@ async.waterfall([
     async.eachSeries(process, function(session, c) {
       async.eachSeries(dirs, function(dir, b) {
         var url = BASE + '/' + session + '/' + dir + '/BILLSTATUS-' + session + '-' + dir + '.zip';
+        var tmp = '/tmp/' + session + '.zip';
         var out = OUTPUT + session + '/' + dir;
 
         async.waterfall([
@@ -55,43 +62,35 @@ async.waterfall([
             });
           },
           function(a) {
-            request(url).pipe(unzip.Extract({
-              path : out 
-            })).on('close', function(err) {
-              console.log('Completed scrape of', url);
+            request(url).pipe(fs.createWriteStream(tmp)).on('close', function(err) {
+              a();
+            });
+          },
+          function(a) {
+            var zip = new AdmZip(tmp);
+            zip.extractAllTo(out, true);
+            a();
+            /*
+            new Decompress({mode: '755'})
+              .src(tmp)
+              .dest(out)
+              .use(Decompress.zip({strip:1}))
+              .run(function(err, files) {
+                if (err) {
+                  console.log('Error', err, url);
+                } else {
+                  console.log('Decompressed ' + files.length + ' from', url);
+                }
+                a(err);
+              })
+            */
+          },
+          function(a) {
+            del([tmp], {force:true}, function(err) {
               a(err);
-            }).on('error', function(err) {
-              console.log('Error', err, url);
-              a(null);
-              //a(err);
             });
           }
         ], b);
-
-        /*
-        request(url).pipe(unzip.Parse()).on('entry', function(entry) {
-          var fileName = entry.path;
-          console.log(fileName);
-        }).on('error', function(err) {
-          console.log('Error', err);
-          b(err);
-        }).on('exit', function() {
-          b(err);
-        });
-       */
-
-        //b();
-
-        /*
-        request(url)
-          .pipe(unzip.Parse())
-          .on('entry', function(entry) {
-
-          })
-          .on('exit', 
-        ;
-       */
-        //b(null, url);
       }, c);
     }, d);
   }
