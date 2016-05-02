@@ -1,18 +1,34 @@
+
 import xml.etree.ElementTree as ET
 import glob
 import json
 import time
+import re
 
 files = glob.glob("data/*/*/*") #all data files
-
-with open("data.json", "wb") as f:
+name_re = re.compile("^(.*).(D|R).(..).*$")
+with open("data.json", "w") as f:
     for bill in files:
         tree = ET.parse(bill)
         root = tree.getroot().find('bill') #load the child of root as root, cuz real root is useless
         session = root.find("congress").text #get the session 
         #get the full name of all sponsors and cosponsors
-        cosponsors = [i.find("fullName").text for i in root.find("cosponsors").findall("item")]
-        sponsors = [i.find("fullName").text for i in root.find("sponsors").findall("item")]
+        cosponsors = []
+        for i in root.find("cosponsors").findall("item"):
+            rep = name_re.match(i.find("fullName").text)
+            if type(rep) == tuple:
+                cosponsors.append({"name": rep[0], "party" : rep[1], "state" : rep[2]})
+            elif rep != None:
+                rep = rep.groups()
+                cosponsors.append({"name": rep[0], "party" : rep[1], "state" : rep[2]})
+        sponsors = []
+        for i in root.find("sponsors").findall("item"):
+            rep = name_re.match(i.find("fullName").text)
+            if type(rep) == tuple:
+                sponsors.append({"name": rep[0], "party" : rep[1], "state" : rep[2]})
+            elif rep != None:
+                rep = rep.groups()
+                sponsors.append({"name": rep[0], "party" : rep[1], "state" : rep[2]})
         #get a summary of the bill
         try:
             most_recent_summary = root.find("summaries").findall("billSummaries/item")[-1].find("text").text
