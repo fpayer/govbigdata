@@ -15,18 +15,18 @@ for session in data.values():
             if "becamePublicLaw" in bill['actions']:
                 cosp_v_pass[len(bill['cosponsors'])] = cosp_v_pass.get(len(bill['cosponsors']),0) + 1
 
-size = len(cosp_v_pass)
+size = int(max(cosp_v_pass.keys())) + 1
 width = 1
-occurrences = [value for key,value in sorted(cosp_v_pass.items())]
-num_cosp = sorted(cosp_v_pass)
-ind = np.arange(size)
+occurrences = [cosp_v_pass.get(key,0) for key in range(size)]
+num_cosp = range(size)
 
 fig, ax = plt.subplots()
-chart1 = ax.bar(ind, occurrences, width)
+chart1 = ax.bar(np.arange(size), occurrences, width)
 
+fig.canvas.set_window_title("cosponsors_vs_bills_passed")
 ax.set_ylabel("Number of bills passed")
 ax.set_xlabel("Number of cosponsors")
 ax.set_title("Number of cosponsors per passed bill")
-ax.set_xticks(ind)
+ax.set_xticks(np.arange(0,size,10))
 
 plt.show()
