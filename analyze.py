@@ -96,4 +96,60 @@ def states_and_parties(data):
     plt.axis('equal')
     plt.show()
 
-states_and_parties(data)
+def amendments(data):
+    amendments = {k:{"days":0,"passed":0,"unpassed":0} for k in range(1000)}
+    maximal = 0
+    for session in data.values():
+        for typ in session.values():
+            for bill in typ.values():
+                if bill['amendments'] > 0:
+                    maximal = max([maximal,bill['amendments']])
+                    start = datetime.fromtimestamp(time.mktime(time.strptime(bill['dates'][0],"%Y-%m-%d")))
+                    end = datetime.fromtimestamp(time.mktime(time.strptime(bill['dates'][-1],"%Y-%m-%d")))
+                    amendments[bill['amendments']]["days"] += (end - start).days
+                    if "becamePublicLaw" in bill['actions']:
+                        amendments[bill['amendments']]['passed'] += 1 
+                    else:
+                        amendments[bill['amendments']]['unpassed'] += 1 
+
+    num_amendments = range(maximal)
+    days = [amendments[k]["days"] for k in num_amendments]
+    passed = [amendments[k]["passed"] for k in num_amendments]
+    unpassed = [amendments[k]["unpassed"] for k in num_amendments]
+    width = 1
+
+
+    fig, ax = plt.subplots()
+    chart1 = ax.bar(np.arange(maximal), days, width)
+
+    fig.canvas.set_window_title("amendments_vs_average_days")
+    ax.set_ylabel("Average days to pass")
+    ax.set_xlabel("Number of amendments")
+    ax.set_title("Amendments vs average days to pass")
+    ax.set_xticks(np.arange(0,maximal,10))
+
+    plt.show()
+
+    fig, ax = plt.subplots()
+    chart2 = ax.bar(np.arange(maximal), passed, width)
+
+    fig.canvas.set_window_title("amendments_vs_passed")
+    ax.set_ylabel("Bills Passed")
+    ax.set_xlabel("Number of amendments")
+    ax.set_title("Amendments vs Bills Passed")
+    ax.set_xticks(np.arange(0,maximal,10))
+
+    plt.show()
+
+    fig, ax = plt.subplots()
+    chart3 = ax.bar(np.arange(maximal), unpassed, width)
+
+    fig.canvas.set_window_title("amendments_vs_unpassed")
+    ax.set_ylabel("Bills Unpassed")
+    ax.set_xlabel("Number of amendments")
+    ax.set_title("Amendments vs Number of bills unpassed")
+    ax.set_xticks(np.arange(0,maximal,10))
+
+    plt.show()
+
+amendments(data)
