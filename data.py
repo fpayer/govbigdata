@@ -60,13 +60,18 @@ with open("data.json", "w") as f:
                 for i in root.find("actions").find("actionTypeCounts"):
                     actions[i.tag] = int(i.text)
 
+
+                amendment_count = 0
+                for i in root.find("amendments").findall("amendment"):
+                    amendment_count += 1
+
                 #get dates of all the actions
                 action_dates = [time.strptime(i.find("actionDate").text, "%Y-%m-%d") for i in root.find("actions").findall("item")]
                 action_dates = list(set(action_dates))
                 action_dates.sort()
                 action_dates = [time.strftime("%Y-%m-%d",i) for i in action_dates]
 
-                info[session][bill_type][bill_number] = {"cosponsors" : cosponsors, "sponsors" : sponsors, "title" : title, "summary" : most_recent_summary, "actions" : actions, "dates" : action_dates, "committees": committees}
+                info[session][bill_type][bill_number] = {"cosponsors" : cosponsors, "sponsors" : sponsors, "title" : title, "summary" : most_recent_summary, "actions" : actions, "dates" : action_dates, "committees": committees, "amendments":amendment_count}
                 
     json.dump(info, f,indent=4)
 
