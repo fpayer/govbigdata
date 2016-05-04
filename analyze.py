@@ -66,4 +66,34 @@ def times(data):
     plt.show()
 
 
-times(data)
+def states_and_parties(data):
+    state_counts = {}
+    party_counts = {}
+    for session in data.values():
+        for typ,bills in session.items():
+            if typ != "s":
+                continue
+            for bill in bills.values():
+                if "becamePublicLaw" in bill['actions']:
+                    for rep in bill['sponsors']:
+                        state_counts[rep["state"]] = state_counts.get(rep["state"],0) + 1
+                        party_counts[rep["party"]] = party_counts.get(rep["party"],0) + 1
+                    for rep in bill['cosponsors']:
+                        state_counts[rep["state"]] = state_counts.get(rep["state"],0) + 1
+                        party_counts[rep["party"]] = party_counts.get(rep["party"],0) + 1
+                                                  
+    states = state_counts.keys()
+    bills = [state_counts[k] for k in states]
+
+    plt.pie(bills,labels=states,autopct='%1.1f%%')
+    plt.axis('equal')
+    plt.show()
+
+    parties = party_counts.keys()
+    bills = [party_counts[k] for k in parties]
+
+    plt.pie(bills,labels=parties,autopct='%1.1f%%')
+    plt.axis('equal')
+    plt.show()
+
+states_and_parties(data)
