@@ -40,6 +40,13 @@ with open("data.json", "w") as f:
                         rep = rep.groups()
                         sponsors.append({"name": rep[0], "party" : rep[1], "state" : rep[2]})
 
+                # get list of all {'committee': 'name', 'subcommittees': ['names']}
+                committees = []
+                for i in root.find("committees").find("billCommittees").findall("item"):
+                    cname = i.find('name').text.strip()
+                    subc = [s.find('item').find('name').text.strip() for s in i.findall('subcommittees') if s.find('item') is not None]
+                    committees.append({"name": cname, "subcommittees": subc})
+
                 #get a summary of the bill
                 try:
                     most_recent_summary = root.find("summaries").findall("billSummaries/item")[-1].find("text").text
@@ -59,7 +66,7 @@ with open("data.json", "w") as f:
                 action_dates.sort()
                 action_dates = [time.strftime("%Y-%m-%d",i) for i in action_dates]
 
-                info[session][bill_type][bill_number] = {"cosponsors" : cosponsors, "sponsors" : sponsors, "title" : title, "summary" : most_recent_summary, "actions" : actions, "dates" : action_dates}
+                info[session][bill_type][bill_number] = {"cosponsors" : cosponsors, "sponsors" : sponsors, "title" : title, "summary" : most_recent_summary, "actions" : actions, "dates" : action_dates, "committees": committees}
                 
     json.dump(info, f,indent=4)
 
