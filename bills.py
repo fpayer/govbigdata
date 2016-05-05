@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import json
 import re
 #12 becamePublicLaw 114-891-HR
