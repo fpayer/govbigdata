@@ -4,11 +4,60 @@ import matplotlib.pyplot as plt
 import time
 from datetime import datetime
 
-
 data = {}
 with open("data.json","r") as f:
     data = json.load(f)
 
+def bills_per_committee(data):
+    size = 25
+
+    com = {}
+    passedcom = {}
+    for session in data.values():
+        for typ in session.values():
+            for bill in typ.values():
+                for c in bill['committees']:
+                    cname = c['name']
+                    if cname not in com:
+                        com[cname] = 1
+                    else:
+                        com[cname] += 1
+                    if 'becamePublicLaw' in bill['actions']:
+                        if cname not in passedcom:
+                            passedcom[cname] = 1
+                        else:
+                            passedcom[cname] += 1
+                    else:
+                        if cname not in passedcom:
+                            passedcom[cname] = 0
+
+    # assuming order stays constant
+    comnames = np.array(com.keys())
+    comvals = com.values()
+    passedcv = np.array(passedcom.values())
+    # get rid of last word in each argsorted committee name
+    svals = np.argsort(comvals)
+    comnames = [' '.join(c.split()[:-1]) for c in comnames[svals].tolist()[::-1][:size]]
+    comvals = sorted(comvals)[::-1][:size]
+    passedpercom = passedcv[svals].tolist()[::-1][:size]
+
+    width = 1
+    occurances = comvals#com.values()
+
+    fig, ax = plt.subplots()
+    p1 = ax.bar(np.arange(size), occurances, width, color='darkmagenta')
+    p2 = ax.bar(np.arange(size), passedpercom, width)
+
+    ax.legend((p1[0], p2[0]), ('Bills introduced', 'Bills passed into law'))
+
+    fig.canvas.set_window_title("bills_per_committee")
+    ax.set_ylabel("Number of bills introduced")
+    ax.set_xlabel("Committee name")
+    ax.set_title("Number of bills introduced per committee")
+    plt.xticks(np.arange(0,size,1)+.5, tuple(comnames), rotation='vertical')
+    #plt.tight_layout()
+    plt.subplots_adjust(bottom=0.4)
+    plt.show()
 
 def cosponsors_v_pass(data):
     cosp_v_pass = {}
@@ -96,4 +145,4 @@ def states_and_parties(data):
     plt.axis('equal')
     plt.show()
 
-states_and_parties(data)
+bills_per_committee(data)
