@@ -148,6 +148,42 @@ def states_and_parties(data):
     plt.axis('equal')
     plt.show()
 
+def states(data):
+    state_counts = {}
+    total = 0
+    for session in data.values():
+            for bill in session['s'].values():
+                if "becamePublicLaw" in bill['actions']:
+                    total += 1
+                    for rep in bill['sponsors']:
+                        if not any(c.isdigit() for c in rep["state"]):
+                            state_counts[rep["state"]] = state_counts.get(rep["state"],0) + 1
+                    for rep in bill['cosponsors']:
+                        if not any(c.isdigit() for c in rep["state"]):
+                            state_counts[rep["state"]] = state_counts.get(rep["state"],0) + 1
+                                                  
+
+
+
+    counts = sorted(state_counts.values())
+    counts = [x/total for x in counts]
+    states = sorted(state_counts, key=state_counts.get)
+
+    fig, ax = plt.subplots()
+    chart1 = ax.bar(np.arange(len(counts)), counts, 1)
+
+    fig.canvas.set_window_title("state_involvement_pass")
+    ax.set_ylabel("Percent of Bills Passed")
+    ax.set_xlabel("States")
+    ax.set_title("Percentage of appearance in passing bills")
+    ax.set_xticks(np.arange(len(states)) + .5)
+    ax.set_xticklabels(states)
+
+    plt.show()
+
+
+
+
 def amendments(data):
     amendments = {k:{"days":0,"passed":0,"count":0} for k in range(1000)}
     maximal = 0
@@ -192,4 +228,4 @@ def amendments(data):
 
     plt.show()
 
-cosponsors_v_pass(data)
+states(data)
