@@ -148,9 +148,10 @@ def states_and_parties(data):
     plt.axis('equal')
     plt.show()
 
-def states(data):
+def state_involvement(data):
     state_counts = {}
     total = 0
+    #state involvement in passed bills
     for session in data.values():
             for bill in session['s'].values():
                 if "becamePublicLaw" in bill['actions']:
@@ -180,6 +181,48 @@ def states(data):
     ax.set_xticklabels(states)
 
     plt.show()
+    
+def state_prob(data):
+    #probability of passing per state
+    states_pass_count = {}
+    for session in data.values():
+        for bill in session['s'].values():
+            for rep in bill['sponsors']:
+                if not any(c.isdigit() for c in rep["state"]):
+                    state = states_pass_count.get(rep['state'], {"passed":0, "total":0})
+                    state['total'] += 1
+                    if "becamePublicLaw" in bill['actions']:
+                        state['passed']+=1
+                    states_pass_count[rep['state']] = state
+
+            for rep in bill['cosponsors']:
+                if not any(c.isdigit() for c in rep["state"]):
+                    state = states_pass_count.get(rep['state'], {"passed":0, "total":0})
+                    state['total'] += 1
+                    if "becamePublicLaw" in bill['actions']:
+                        state['passed']+=1
+                    states_pass_count[rep['state']] = state
+
+
+
+
+    states_pass_count = {k:v['passed']/v['total'] for k,v in states_pass_count.items()}
+    counts = sorted(states_pass_count.values())
+    states = sorted(states_pass_count, key=states_pass_count.get)
+
+    fig, ax = plt.subplots()
+    chart1 = ax.bar(np.arange(len(counts)), counts, 1)
+
+    fig.canvas.set_window_title("state_pass_prob")
+    ax.set_ylabel("Probability of passing")
+    ax.set_xlabel("States")
+    ax.set_title("Probability of a bill passing for a given state")
+    ax.set_xticks(np.arange(len(states)) + .5)
+    ax.set_xticklabels(states)
+
+    plt.show()
+
+                
 
 
 
@@ -228,4 +271,4 @@ def amendments(data):
 
     plt.show()
 
-states(data)
+state_prob(data)
