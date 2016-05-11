@@ -73,9 +73,8 @@ def cosponsors_v_pass(data):
     size = int(max(cosp_v_pass.keys())) + 1
     width = 1
     occurrences = [cosp_v_pass.get(key,0)/count for key in range(size)]
-    print occurrences
+  
     num_cosp = range(size)
-
     fig, ax = plt.subplots()
     chart1 = ax.bar(np.arange(size), occurrences, width)
 
@@ -87,7 +86,6 @@ def cosponsors_v_pass(data):
 
     plt.show()
 
-cosponsors_v_pass(data)
 def times(data):
     type_times = {k:{"count":0,"sum":0} for k in data['113'].keys()}
     for session in data.values():
@@ -292,9 +290,6 @@ def bipart(data):
                         r += 1
                     else:
                         d += 1
-                    ratio = r / float(d + r)
-                if "becamePublicLaw" in bill['actions']:
-                    pass
                 if d + r != 0:
                     rat = round((r / float(d+r)), 1) #approx % of rep
                     ratio = ratios[rat]
@@ -329,4 +324,64 @@ def bipart(data):
     plt.show()
 
 
-bipart(data)
+def myround(x, base):
+    num = x * 100
+    return int(base * round(float(num) / base))
+    
+#bipartisanship of cosponsors vs likelihood of bill passing
+#more detailed version of graph
+def bipart2(data):
+    x = {} #bills passed
+    y = {} #bills not passed
+    ratios = {0: "0/100", 5: "5/95", 10: "10/90", 15: "15/85", 20: "20/80", 25: "25/35", 30: "30/70", 35: "35/65", 40: "40/60", 45: "45/55", 50: "50/50", 55: "55/45", 60: "60/40", 65: "65/35", 70: "70/30", 75: "75/25", 80: "80/20", 85: "85/15", 90: "90/10", 95: "95/5", 100: "100/0"}
+    for session in data.values():
+        for typ in session.values():
+            for bill in typ.values():
+                r = 0
+                d = 0
+                for s in bill['cosponsors']:
+                    #print s
+                    if s['party'] == 'R':
+                        r += 1
+                    else:
+                        d += 1
+                    ratio = r / float(d + r)
+                    print myround(ratio, 5)
+                    
+                if d + r != 0:
+                    rat = myround(r/float(d+r), 5) # % republicans
+                    ratio = ratios[rat]
+                    if "becamePublicLaw" in bill['actions']:
+                        if ratio in x.keys():
+                            x[ratio] += 1
+                        else:
+                            x[ratio] = 1
+                    else:
+                        if ratio in y.keys():
+                            y[ratio] += 1
+                        else:
+                            y[ratio] = 1
+    size = len(x)
+    width = 1 
+    types = sorted(x)
+    types = []
+    for i in range(0, 21):
+        types.append(ratios[(i * 5)])
+    print types
+    result = []
+    
+    for i in types:
+        num = round(x[i]/float(x[i] + y[i]), 5)
+        result.append(num * 100)
+    
+    fig, ax = plt.subplots()
+    chart1 = ax.bar(np.arange(size), result, width)
+    ax.set_xticks(np.arange(size) + .5)
+    ax.set_xticklabels(types, rotation='vertical')
+    
+    fig.canvas.set_window_title("bipartisanship_vs_likelihood_to_pass")
+    ax.set_xlabel("% Republican Cosponsors/% Democrat Cosponsors")
+    ax.set_ylabel("% bills passed")
+    plt.show()
+
+bipart2(data)
