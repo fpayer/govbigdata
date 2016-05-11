@@ -321,6 +321,7 @@ def bipart(data):
     fig.canvas.set_window_title("bipartisanship_vs_likelihood_to_pass")
     ax.set_xlabel("% Republican Cosponsors/% Democrat Cosponsors")
     ax.set_ylabel("% bills passed")
+    ax.set_title("Bipartisanship of Cosponsors vs. Likelihood of Bill Passing")
     plt.show()
 
 
@@ -340,14 +341,10 @@ def bipart2(data):
                 r = 0
                 d = 0
                 for s in bill['cosponsors']:
-                    #print s
                     if s['party'] == 'R':
                         r += 1
                     else:
                         d += 1
-                    ratio = r / float(d + r)
-                    print myround(ratio, 5)
-                    
                 if d + r != 0:
                     rat = myround(r/float(d+r), 5) # % republicans
                     ratio = ratios[rat]
@@ -367,7 +364,6 @@ def bipart2(data):
     types = []
     for i in range(0, 21):
         types.append(ratios[(i * 5)])
-    print types
     result = []
     
     for i in types:
@@ -382,6 +378,7 @@ def bipart2(data):
     fig.canvas.set_window_title("bipartisanship_vs_likelihood_to_pass")
     ax.set_xlabel("% Republican Cosponsors/% Democrat Cosponsors")
     ax.set_ylabel("% bills passed")
+    ax.set_title("Bipartisanship of Cosponsors vs. Likelihood of Bill Passing")
     plt.show()
 
 bipart2(data)
