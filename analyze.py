@@ -61,6 +61,59 @@ def bills_per_committee(data):
     plt.subplots_adjust(bottom=0.4)
     plt.show()
 
+def bills_per_committee_normalized(data):
+    size = 25
+    com = {}
+    passedcom = {}
+    for session in data.values():
+        for typ in session.values():
+            for bill in typ.values():
+                for c in bill['committees']:
+                    cname = c['name']
+                    if cname not in com:
+                        com[cname] = 1
+                    else:
+                        com[cname] += 1
+                    if 'becamePublicLaw' in bill['actions']:
+                        if cname not in passedcom:
+                            passedcom[cname] = 1
+                        else:
+                            passedcom[cname] += 1
+                    else:
+                        if cname not in passedcom:
+                            passedcom[cname] = 0
+
+    # assuming order stays constant
+    comnames = np.array(com.keys())
+    comvals = com.values()
+    passedcv = np.array(passedcom.values())
+    
+    comvalsnorm = 100. * np.asfarray(passedcv)/np.asfarray(np.array(comvals))
+    svals = np.argsort(comvalsnorm)
+
+    # get rid of last word in each argsorted committee name
+    comnames = [' '.join(c.split()[:-1]) for c in comnames[svals].tolist()[::-1][:size]]
+    #comvals = sorted(comvals)[::-1]
+    #passedpercom = passedcv[svals].tolist()[::-1]
+    comvalsnorm = sorted(comvalsnorm)[::-1][:size]
+
+    width = 1
+    occurances = comvalsnorm#com.values()
+
+    fig, ax = plt.subplots()
+    p1 = ax.bar(np.arange(size), occurances, width, color='darkmagenta')
+
+    #ax.legend((p1[0]), ('Bills introduced', ))
+
+    fig.canvas.set_window_title("bills_per_committee_norm")
+    ax.set_ylabel("Bill pass %")
+    ax.set_xlabel("Committee name")
+    ax.set_title("Normalized bill pass percentage per committee")
+    plt.xticks(np.arange(0,size,1)+.5, tuple(comnames), rotation='vertical')
+    #plt.tight_layout()
+    plt.subplots_adjust(bottom=0.6)
+    plt.show()
+
 def cosponsors_v_pass(data):
     cosp_v_pass = {}
     count = 0
@@ -462,4 +515,4 @@ def bipart2(data):
     ax.set_title("Bipartisanship of Cosponsors vs. Likelihood of Bill Passing")
     plt.show()
 
-amendments(data)
+bills_per_committee_normalized(data)
