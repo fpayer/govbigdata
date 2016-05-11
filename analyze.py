@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 from datetime import datetime
+from math import log,ceil,floor
 
 data = {}
 with open("data.json","r") as f:
@@ -66,23 +67,43 @@ def cosponsors_v_pass(data):
     for session in data.values():
         for typ in session.values():
             for bill in typ.values():
-                count += 1
+
+                num_csp = cosp_v_pass.get(len(bill['cosponsors']),{"passed":0,"total":0}) 
+                num_csp["total"] += 1
+
                 if "becamePublicLaw" in bill['actions']:
-                    cosp_v_pass[len(bill['cosponsors'])] = cosp_v_pass.get(len(bill['cosponsors']),0) + 1
+                    count += 1
+                    num_csp['passed'] += 1
+                    cosp_v_pass[len(bill['cosponsors'])] = num_csp
 
     size = int(max(cosp_v_pass.keys())) + 1
-    width = 1
-    occurrences = [cosp_v_pass.get(key,0)/count for key in range(size)]
-  
-    num_cosp = range(size)
-    fig, ax = plt.subplots()
-    chart1 = ax.bar(np.arange(size), occurrences, width)
 
-    fig.canvas.set_window_title("cosponsors_vs_bills_passed")
-    ax.set_ylabel("Percent of bills passed")
+    num_csp_buckets = {2**x:{'passed':0,'total':0} for x in range(int(ceil(log(size,2))))}
+    num_csp_buckets[0] = {'passed':0,'total':0}
+
+
+    for num, info in cosp_v_pass.items():
+        if num == 0:
+            num_csp_buckets[0]['passed'] += info['passed']
+            num_csp_buckets[0]['total'] += info['total']
+        else:
+            num_csp_buckets[2**int(floor(log(num,2)))]['passed'] += info['passed']
+            num_csp_buckets[2**int(floor(log(num,2)))]['total'] += info['total']
+
+    num_csp_buckets = {k:v['passed']/v['total'] for k,v in num_csp_buckets.items()}
+
+    buckets = sorted(num_csp_buckets)
+    probs = [num_csp_buckets[x] for x in buckets]
+    
+    fig, ax = plt.subplots()
+    chart1 = ax.bar(np.arange(int(ceil(log(size,2))) + 1), probs, 1)
+
+    fig.canvas.set_window_title("cosponsors_vs_bills_passed_fixed")
+    ax.set_ylabel("Probability of bills passed")
     ax.set_xlabel("Number of cosponsors")
     ax.set_title("Number of cosponsors Vs Percent of bills passed")
-    ax.set_xticks(np.arange(0,size,10))
+    ax.set_xticks(np.arange(int(ceil(log(size,2))) + 1) + .5)
+    ax.set_xticklabels([str(x) for x in buckets])
 
     plt.show()
 
@@ -280,10 +301,28 @@ def amendments(data):
     num_amendments = range(maximal)
     days = [amendments[k]["days"]/amendments[k]["count"] if amendments[k]["count"] != 0 else 0 for k in num_amendments]
     passed = [amendments[k]["passed"]/passed for k in num_amendments]
-    width = 1
+
+
+    num_amendments = [2**x for x in range(int(ceil(log(maximal,2))))]
+    num_amd_buckets = {x:{'passed':0,'total':0} for x in num_amendments}
+    num_amd_buckets[0] = {'passed':0,'total':0}
+
+    for num, info in amendments.items():
+        if num == 0:
+            num_amd_buckets[0]['passed'] += info['passed']
+            num_amd_buckets[0]['total'] += info['count']
+        else:
+            num_amd_buckets[2**int(floor(log(num,2)))]['passed'] += info['passed']
+            num_amd_buckets[2**int(floor(log(num,2)))]['total'] += info['count']
+
+    num_amd_buckets = {k:(v['passed']/v['total'] if v['total'] != 0 else 0) for k,v in num_amd_buckets.items()}
+
+    buckets = sorted(num_amd_buckets)
+    probs = [num_amd_buckets[x] for x in buckets]
+    
 
     fig, ax = plt.subplots()
-    chart1 = ax.bar(np.arange(maximal), days, width)
+    chart1 = ax.bar(np.arange(maximal), days, 1)
 
     fig.canvas.set_window_title("amendments_vs_average_days")
     ax.set_ylabel("Average days to pass")
@@ -294,18 +333,18 @@ def amendments(data):
     plt.show()
 
     fig, ax = plt.subplots()
-    chart2 = ax.bar(np.arange(maximal), passed, width)
+    chart2 = ax.bar(np.arange(int(ceil(log(maximal,2))) + 1), probs, 1)
 
     fig.canvas.set_window_title("amendments_vs_passed")
-    ax.set_ylabel("Percent of Bills Passed")
+    ax.set_ylabel("probability of Bill Passing")
     ax.set_xlabel("Number of amendments")
-    ax.set_title("Amendments vs Percent of Bills Passed")
-    ax.set_xticks(np.arange(0,maximal,10))
+    ax.set_title("Amendments vs probability of Bills passing")
+    ax.set_xticks(np.arange(int(ceil(log(maximal,2))) + 1) + .5)
+    ax.set_xticklabels([str(x) for x in buckets])
 
     plt.show()
 
 
-from math import log
 #100% bipartisan if 50% R and 50% D, 0% partisan if 100% R or 100% D
 #binary entropy
 def bipartisanship(R, D):
@@ -423,4 +462,4 @@ def bipart2(data):
     ax.set_title("Bipartisanship of Cosponsors vs. Likelihood of Bill Passing")
     plt.show()
 
-rep_prob(data)
+amendments(data)
