@@ -245,6 +245,8 @@ def rep_prob(data):
     rep_pass_count = {k:v['passed']/v['total'] for k,v in rep_pass_count.items()}
     counts = sorted(rep_pass_count.values())
     reps = sorted(rep_pass_count, key=rep_pass_count.get)
+    avg = sum(counts)/len(counts)
+    counts = [x-avg for x in counts]
 
     fig, ax = plt.subplots()
     chart1 = ax.bar(np.arange(20), counts[:10] + counts[-10:], 1)
@@ -255,6 +257,7 @@ def rep_prob(data):
     ax.set_title("Probability of a bill passing for a given rep")
     ax.set_xticks(np.arange(20)+ .5)
     ax.set_xticklabels(reps[:10] + reps[-10:])
+    ax.set_yticklabels(np.arange(0,.2,.02))
 
     plt.show()
 
