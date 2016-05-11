@@ -251,13 +251,12 @@ def rep_prob(data):
     fig, ax = plt.subplots()
     chart1 = ax.bar(np.arange(20), counts[:10] + counts[-10:], 1)
 
-    fig.canvas.set_window_title("rep_pass_prob")
-    ax.set_ylabel("Probability of passing")
+    fig.canvas.set_window_title("rep_pass_prob_all")
+    ax.set_ylabel("Difference from average ({:.2}) Probability of passing".format(avg))
     ax.set_xlabel("Top and Bottom 10 reps")
     ax.set_title("Probability of a bill passing for a given rep")
     ax.set_xticks(np.arange(20)+ .5)
     ax.set_xticklabels(reps[:10] + reps[-10:])
-    ax.set_yticklabels(np.arange(0,.2,.02))
 
     plt.show()
 
