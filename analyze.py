@@ -217,6 +217,47 @@ def state_prob(data):
 
     plt.show()
                 
+def rep_prob(data):
+    #probability of passing per rep
+    rep_pass_count = {}
+    for session in data.values():
+        for typ in session.values():
+            for bill in typ.values():
+                for rep in bill['sponsors']:
+                    name = rep['name'].split()[1]
+                    curr_rep = rep_pass_count.get(name, {"passed":0, "total":0})
+                    curr_rep['total'] += 1
+                    if "becamePublicLaw" in bill['actions']:
+                        curr_rep['passed']+=1
+                    rep_pass_count[name] = curr_rep
+
+                for rep in bill['cosponsors']:
+                    name = rep['name'].split()[1]
+                    curr_rep = rep_pass_count.get(name, {"passed":0, "total":0})
+                    curr_rep['total'] += 1
+                    if "becamePublicLaw" in bill['actions']:
+                        curr_rep['passed']+=1
+                    rep_pass_count[name] = curr_rep
+
+
+
+
+    rep_pass_count = {k:v['passed']/v['total'] for k,v in rep_pass_count.items()}
+    counts = sorted(rep_pass_count.values())
+    reps = sorted(rep_pass_count, key=rep_pass_count.get)
+
+    fig, ax = plt.subplots()
+    chart1 = ax.bar(np.arange(20), counts[:10] + counts[-10:], 1)
+
+    fig.canvas.set_window_title("rep_pass_prob")
+    ax.set_ylabel("Probability of passing")
+    ax.set_xlabel("Top and Bottom 10 reps")
+    ax.set_title("Probability of a bill passing for a given rep")
+    ax.set_xticks(np.arange(20)+ .5)
+    ax.set_xticklabels(reps[:10] + reps[-10:])
+
+    plt.show()
+
 def amendments(data):
     amendments = {k:{"days":0,"passed":0,"count":0} for k in range(1000)}
     maximal = 0
@@ -270,7 +311,6 @@ def bipartisanship(R, D):
     if p == 1:
         return 0
     entropy = - p * log(p, 2) - (1-p)*log((1-p), 2)
-    print entropy
     return entropy
 
 #bipartisanship of cosponsors vs likelihood of bill passing
@@ -381,4 +421,4 @@ def bipart2(data):
     ax.set_title("Bipartisanship of Cosponsors vs. Likelihood of Bill Passing")
     plt.show()
 
-bipart2(data)
+rep_prob(data)
