@@ -143,10 +143,14 @@ def cosponsors_v_pass(data):
             num_csp_buckets[2**int(floor(log(num,2)))]['passed'] += info['passed']
             num_csp_buckets[2**int(floor(log(num,2)))]['total'] += info['total']
 
-    num_csp_buckets = {k:v['passed']/v['total'] for k,v in num_csp_buckets.items()}
+
+
+    num_csp_buckets1 = {k:v['passed']/v['total'] for k,v in num_csp_buckets.items()}
 
     buckets = sorted(num_csp_buckets)
-    probs = [num_csp_buckets[x] for x in buckets]
+    totals = [num_csp_buckets[x]['total'] for x in buckets]
+
+    probs = [num_csp_buckets1[x] for x in buckets]
     
     fig, ax = plt.subplots()
     chart1 = ax.bar(np.arange(int(ceil(log(size,2))) + 1), probs, 1)
@@ -515,4 +519,4 @@ def bipart2(data):
     ax.set_title("Bipartisanship of Cosponsors vs. Likelihood of Bill Passing")
     plt.show()
 
-bills_per_committee_normalized(data)
+cosponsors_v_pass(data)
