@@ -115,17 +115,15 @@ def bills_per_committee_normalized(data):
     plt.show()
 
 def cosponsors_v_pass(data):
-    cosp_v_pass = {}
+    cosp_v_pass = {k:{'passed':0,'total':0} for k in range(511)}
     count = 0
     for session in data.values():
         for typ in session.values():
             for bill in typ.values():
-
-                num_csp = cosp_v_pass.get(len(bill['cosponsors']),{"passed":0,"total":0}) 
+                num_csp = cosp_v_pass[len(bill['cosponsors'])] 
                 num_csp["total"] += 1
 
                 if "becamePublicLaw" in bill['actions']:
-                    count += 1
                     num_csp['passed'] += 1
                     cosp_v_pass[len(bill['cosponsors'])] = num_csp
 
@@ -144,8 +142,7 @@ def cosponsors_v_pass(data):
             num_csp_buckets[2**int(floor(log(num,2)))]['total'] += info['total']
 
 
-
-    num_csp_buckets1 = {k:v['passed']/v['total'] for k,v in num_csp_buckets.items()}
+    num_csp_buckets1 = {k:(100.*(v['passed']/v['total']) if v['total'] != 0 else 0) for k,v in num_csp_buckets.items()}
 
     buckets = sorted(num_csp_buckets)
     totals = [num_csp_buckets[x]['total'] for x in buckets]
@@ -156,11 +153,18 @@ def cosponsors_v_pass(data):
     chart1 = ax.bar(np.arange(int(ceil(log(size,2))) + 1), probs, 1)
 
     fig.canvas.set_window_title("cosponsors_vs_bills_passed_fixed")
-    ax.set_ylabel("Probability of bills passed")
+    ax.set_ylabel("Percent of bills passed")
     ax.set_xlabel("Number of cosponsors")
     ax.set_title("Number of cosponsors Vs Percent of bills passed")
     ax.set_xticks(np.arange(int(ceil(log(size,2))) + 1) + .5)
+    ax.set_yticks(np.arange(0,45,5))
+    ax.set_yticklabels(np.arange(0,45,5))
     ax.set_xticklabels([str(x) for x in buckets])
+
+    for rect, label in zip(ax.patches, totals):
+        height = rect.get_height()
+        ax.text(rect.get_x() + rect.get_width()/2, height + 1, label, ha='center', va='bottom')
+
 
     plt.show()
 
