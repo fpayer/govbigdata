@@ -321,9 +321,6 @@ def rep_prob(data):
                         curr_rep['passed']+=1
                     rep_pass_count[name] = curr_rep
 
-
-
-
     rep_pass_count = {k:100.*v['passed']/v['total'] for k,v in rep_pass_count.items()}
     counts = sorted(rep_pass_count.values())
     reps = sorted(rep_pass_count, key=rep_pass_count.get)
@@ -464,6 +461,15 @@ def bipart(data):
     ax.set_xlabel("% Republican Cosponsors/% Democrat Cosponsors")
     ax.set_ylabel("% bills passed")
     ax.set_title("Bipartisanship of Cosponsors vs. Likelihood of Bill Passing")
+
+    totals = []
+    for i in types:
+        totals.append(x[i] + y[i])
+    print totals
+    for rect, label in zip(ax.patches, totals):
+        height = rect.get_height()
+        ax.text(rect.get_x() + rect.get_width()/2 + .5, height + .2, label, ha='center', va='bottom')
+
     plt.show()
 
 
@@ -523,4 +529,4 @@ def bipart2(data):
     ax.set_title("Bipartisanship of Cosponsors vs. Likelihood of Bill Passing")
     plt.show()
 
-rep_prob(data)
+bipart(data)
