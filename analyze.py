@@ -155,7 +155,7 @@ def cosponsors_v_pass(data):
     fig.canvas.set_window_title("cosponsors_vs_bills_passed_fixed")
     ax.set_ylabel("Percent of bills passed")
     ax.set_xlabel("Number of cosponsors")
-    ax.set_title("Number of cosponsors Vs Percent of bills passed")
+    ax.set_title("Number of cosponsors in exponential buckets Vs Percent of bills passed")
     ax.set_xticks(np.arange(int(ceil(log(size,2))) + 1) + .5)
     ax.set_yticks(np.arange(0,45,5))
     ax.set_yticklabels(np.arange(0,45,5))
@@ -303,8 +303,8 @@ def rep_prob(data):
     #probability of passing per rep
     rep_pass_count = {}
     for session in data.values():
-        for typ in session.values():
-            for bill in typ.values():
+        #for typ in session.values():
+            for bill in session['hr'].values():#typ.values():
                 for rep in bill['sponsors']:
                     name = rep['name'].split()[1]
                     curr_rep = rep_pass_count.get(name, {"passed":0, "total":0})
@@ -324,7 +324,7 @@ def rep_prob(data):
 
 
 
-    rep_pass_count = {k:v['passed']/v['total'] for k,v in rep_pass_count.items()}
+    rep_pass_count = {k:100.*v['passed']/v['total'] for k,v in rep_pass_count.items()}
     counts = sorted(rep_pass_count.values())
     reps = sorted(rep_pass_count, key=rep_pass_count.get)
     avg = sum(counts)/len(counts)
@@ -333,10 +333,10 @@ def rep_prob(data):
     fig, ax = plt.subplots()
     chart1 = ax.bar(np.arange(20), counts[:10] + counts[-10:], 1)
 
-    fig.canvas.set_window_title("rep_pass_prob_all")
-    ax.set_ylabel("Difference from average ({:.2}) Probability of passing".format(avg))
+    fig.canvas.set_window_title("rep_pass_prob_house")
+    ax.set_ylabel("Difference from average ({:.2}) Percent passed".format(avg))
     ax.set_xlabel("Top and Bottom 10 reps")
-    ax.set_title("Probability of a bill passing for a given rep")
+    ax.set_title("Probability of a bill passing for a given house rep")
     ax.set_xticks(np.arange(20)+ .5)
     ax.set_xticklabels(reps[:10] + reps[-10:])
 
@@ -523,4 +523,4 @@ def bipart2(data):
     ax.set_title("Bipartisanship of Cosponsors vs. Likelihood of Bill Passing")
     plt.show()
 
-cosponsors_v_pass(data)
+rep_prob(data)
